@@ -1,35 +1,32 @@
-name: Python Package using Conda
+name: React App CI
 
 on: [push]
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
       max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
-    - name: Set up Miniconda
-      uses: conda-incubator/setup-miniconda@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        auto-update-conda: false
-        activate-environment: base
-        environment-file: environment.yml
-        python-version: '3.10'
+        node-version: '16'
     
     - name: Install dependencies
       run: |
-        conda env update --file environment.yml --name base
+        npm install
     
-    - name: Lint with flake8
+    - name: Lint with ESLint
       run: |
-        conda install flake8
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        npx eslint . --max-warnings=0
     
-    - name: Test with pytest
+    - name: Test with Jest
       run: |
-        conda install pytest
-        pytest
+        npm test -- --watchAll=false
